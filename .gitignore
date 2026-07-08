@@ -1,0 +1,12 @@
+*.exe
+__pycache__/
+*.pyc
+*.pyo
+*.spec
+build/
+dist/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
