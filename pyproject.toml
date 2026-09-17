@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "traffic-load-tester"
-version = "1.0.0"
+version = "1.1.0"
 description = "High-concurrency TCP/UDP/ICMP traffic load tester with a Tkinter GUI (gateway stress tool)"
 readme = "README.md"
 requires-python = ">=3.9"
