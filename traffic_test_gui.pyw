@@ -8,7 +8,7 @@ import subprocess
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
 def setup_app_style(root: tk.Tk) -> None:

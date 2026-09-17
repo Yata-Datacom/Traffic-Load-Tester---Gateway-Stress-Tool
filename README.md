@@ -6,7 +6,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](#)
 
-**v1.0.0** · [CHANGELOG](CHANGELOG.md) · [开发与测试](#开发与测试--development--tests)
+**v1.1.0** · [CHANGELOG](CHANGELOG.md) · [开发与测试](#开发与测试--development--tests)
 
 A Python GUI tool for high-concurrency network traffic testing against a gateway or server. Supports both TCP and UDP, with real-time PPS and bandwidth monitoring.
 
