@@ -8,6 +8,60 @@ import subprocess
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
+__version__ = "1.0.0"
+
+
+def setup_app_style(root: tk.Tk) -> None:
+    """淡绿色调现代主题（零依赖，clam 基底）。"""
+    BG = "#f2f7f2"; PANEL = "#ffffff"; FG = "#1e3a2b"; MUTED = "#5b7a68"
+    ACCENT = "#16a34a"; ACCENT2 = "#4ade80"; ACCENTD = "#15803d"
+    LINE = "#cfe6d5"; HEADER = "#e6f4e8"; ROW_SEL = "#dcfce7"; DANGER = "#dc2626"
+    FONT = ("Microsoft YaHei UI", 9); FONT_B = ("Microsoft YaHei UI", 9, "bold")
+    FONT_H = ("Microsoft YaHei UI", 10, "bold")
+    style = ttk.Style(root)
+    try:
+        style.theme_use("clam")
+    except tk.TclError:
+        pass
+    root.configure(bg=BG)
+    style.configure(".", background=BG, foreground=FG, bordercolor=LINE,
+                    lightcolor=BG, darkcolor=BG, focuscolor=ACCENT)
+    style.configure("TFrame", background=BG)
+    style.configure("TLabel", background=BG, foreground=FG, font=FONT)
+    style.configure("TLabelframe", background=BG, bordercolor=LINE, relief="solid", borderwidth=1)
+    style.configure("TLabelframe.Label", background=BG, foreground=ACCENTD, font=FONT_H)
+    style.configure("TButton", background="#d8ead9", foreground=FG, borderwidth=0,
+                    focusthickness=0, padding=(12, 7), font=FONT)
+    style.map("TButton", background=[("pressed", ACCENTD), ("active", "#c3e3c8")],
+              foreground=[("pressed", "white")])
+    style.configure("Accent.TButton", background=ACCENT, foreground="white",
+                    padding=(14, 8), font=FONT_B)
+    style.map("Accent.TButton", background=[("pressed", ACCENTD), ("active", ACCENT2)],
+              foreground=[("pressed", "white"), ("disabled", "#bbf7d0")])
+    style.configure("Danger.TButton", background=DANGER, foreground="white", padding=(12, 7), font=FONT_B)
+    style.map("Danger.TButton", background=[("pressed", "#991b1b"), ("active", "#ef4444")],
+              foreground=[("disabled", "#fecaca")])
+    style.configure("TEntry", fieldbackground="white", foreground=FG, bordercolor=LINE, padding=4, insertcolor=ACCENT)
+    style.configure("TCombobox", fieldbackground="white", foreground=FG, bordercolor=LINE, padding=4, arrowcolor=ACCENT)
+    style.configure("TCheckbutton", background=BG, foreground=FG, font=FONT, focuscolor=ACCENT)
+    style.configure("TRadiobutton", background=BG, foreground=FG, font=FONT, focuscolor=ACCENT)
+    style.configure("Horizontal.TScale", background=BG, troughcolor="#d8e8da", borderwidth=0)
+    style.configure("TNotebook", background=BG, borderwidth=0)
+    style.configure("TNotebook.Tab", background="#dbe8dc", foreground=MUTED,
+                    padding=(16, 8), borderwidth=0, font=FONT)
+    style.map("TNotebook.Tab", background=[("selected", PANEL)],
+              foreground=[("selected", ACCENT)], font=[("selected", FONT_H)])
+    style.configure("Treeview", background="white", fieldbackground="white",
+                    foreground=FG, rowheight=28, borderwidth=0, font=FONT)
+    style.configure("Treeview.Heading", background=HEADER, foreground="#2f4a3a",
+                    padding=(8, 6), relief="flat", font=FONT_B)
+    style.map("Treeview", background=[("selected", ROW_SEL)], foreground=[("selected", FG)])
+    style.configure("Horizontal.TProgressbar", background=ACCENT, troughcolor="#d8e8da",
+                    borderwidth=0, thickness=8)
+    style.configure("Vertical.TScrollbar", background="#c3dcc6", troughcolor=BG, borderwidth=0, arrowsize=12)
+    style.configure("Horizontal.TScrollbar", background="#c3dcc6", troughcolor=BG, borderwidth=0, arrowsize=12)
+
+
 def detect_gateways() -> List[Tuple[str, str]]:
     cmd = (
         "Get-NetRoute -DestinationPrefix '0.0.0.0/0' | "
@@ -44,6 +98,14 @@ def detect_gateways() -> List[Tuple[str, str]]:
 
 
 def parse_ports(port_str: str) -> Tuple[List[int], str]:
+    """Parse port string into list of ports.
+    Formats:
+      '8080'             -> [8080], desc='single port 8080'
+      '80,443,8080'      -> [80, 443, 8080], desc='3 ports'
+      '100-1000'         -> [100..1000], desc='range 100-1000 (901 ports)'
+      '100-1000:50'      -> 50 random ports from 100-1000, desc='50 ports from 100-1000'
+    Returns (list_of_ports, description_string).
+    """
     raw = port_str.strip()
     if not raw:
         return [], "empty"
@@ -86,7 +148,8 @@ def parse_ports(port_str: str) -> Tuple[List[int], str]:
             if p < 1 or p > 65535:
                 return [], f"invalid port: {p}"
             ports.append(p)
-        return sorted(set(ports)), f"{len(ports)} port(s)"
+        unique = sorted(set(ports))
+        return unique, f"{len(unique)} port(s)"
 
     try:
         p = int(raw)
@@ -441,6 +504,7 @@ class TrafficGUI:
         self.root.title("Traffic Load Tester - Gateway Stress Tool")
         self.root.geometry("700x750")
         self.root.resizable(True, True)
+        setup_app_style(self.root)
 
         self.generator: TrafficGenerator | None = None
         self.tcp_server: TCPServer | None = None
@@ -454,6 +518,7 @@ class TrafficGUI:
         main_frame = ttk.Frame(self.root, padding=10)
         main_frame.pack(fill=tk.BOTH, expand=True)
 
+        # --- Target Config ---
         target_frame = ttk.LabelFrame(main_frame, text="Target Configuration", padding=10)
         target_frame.pack(fill=tk.X, pady=(0, 10))
 
@@ -466,7 +531,7 @@ class TrafficGUI:
         ttk.Entry(target_frame, textvariable=self.port_var, width=14).grid(row=0, column=3, sticky=tk.W, padx=5)
 
         ttk.Label(target_frame, text="e.g. 8080, 80,443, 100-1000, 100-1000:50",
-                  foreground="gray", font=("", 7)).grid(
+                  foreground="#5b7a68", font=("", 7)).grid(
             row=1, column=2, columnspan=2, sticky=tk.W, padx=(20, 0), pady=(0, 2))
 
         ttk.Label(target_frame, text="Protocol:").grid(row=0, column=4, sticky=tk.W, padx=(15, 5))
@@ -487,6 +552,7 @@ class TrafficGUI:
         detect_btn = ttk.Button(target_frame, text="Detect", command=self._on_detect_gateways)
         detect_btn.grid(row=2, column=3, sticky=tk.W, padx=5, pady=(8, 0))
 
+        # --- TCP Server ---
         tcp_srv_frame = ttk.LabelFrame(main_frame, text="Built-in TCP Receiver (for TCP testing)", padding=10)
         tcp_srv_frame.pack(fill=tk.X, pady=(0, 10))
 
@@ -495,21 +561,24 @@ class TrafficGUI:
         ttk.Entry(tcp_srv_frame, textvariable=self.tcp_srv_port_var, width=8).pack(side=tk.LEFT, padx=5)
 
         self.tcp_srv_start_btn = ttk.Button(tcp_srv_frame, text="Start Server",
-                                            command=self._on_start_tcp_server)
+                                            command=self._on_start_tcp_server,
+                                            style="Accent.TButton")
         self.tcp_srv_start_btn.pack(side=tk.LEFT, padx=5)
 
         self.tcp_srv_stop_btn = ttk.Button(tcp_srv_frame, text="Stop Server",
-                                           command=self._on_stop_tcp_server, state=tk.DISABLED)
+                                           command=self._on_stop_tcp_server, state=tk.DISABLED,
+                                           style="Danger.TButton")
         self.tcp_srv_stop_btn.pack(side=tk.LEFT, padx=5)
 
         self.tcp_srv_status_var = tk.StringVar(value="Stopped")
         ttk.Label(tcp_srv_frame, textvariable=self.tcp_srv_status_var,
-                  foreground="gray").pack(side=tk.LEFT, padx=10)
+                  foreground="#5b7a68").pack(side=tk.LEFT, padx=10)
 
         self.tcp_srv_rx_var = tk.StringVar(value="")
         ttk.Label(tcp_srv_frame, textvariable=self.tcp_srv_rx_var,
-                  foreground="darkgreen").pack(side=tk.RIGHT, padx=5)
+                  foreground="#15803d").pack(side=tk.RIGHT, padx=5)
 
+        # --- Traffic Params ---
         param_frame = ttk.LabelFrame(main_frame, text="Traffic Parameters", padding=10)
         param_frame.pack(fill=tk.X, pady=(0, 10))
 
@@ -544,18 +613,27 @@ class TrafficGUI:
         self.rate_var.trace_add("write", lambda *_: self._update_rate_label())
         ttk.Label(param_frame, text="(0 = unlimited burst)").grid(row=2, column=3, sticky=tk.W, pady=(10, 0), padx=5)
 
+        self.rate_warn_var = tk.StringVar(value="")
+        ttk.Label(param_frame, textvariable=self.rate_warn_var,
+                  foreground="#dc2626", font=("Microsoft YaHei UI", 8, "bold")).grid(
+            row=3, column=0, columnspan=4, sticky=tk.W, pady=(4, 0), padx=5)
+
+        # --- Control Buttons ---
         ctrl_frame = ttk.Frame(main_frame)
         ctrl_frame.pack(fill=tk.X, pady=(0, 10))
 
-        self.start_btn = ttk.Button(ctrl_frame, text="Start", command=self._on_start)
+        self.start_btn = ttk.Button(ctrl_frame, text="Start", command=self._on_start,
+                                    style="Accent.TButton")
         self.start_btn.pack(side=tk.LEFT, padx=(0, 10))
 
-        self.stop_btn = ttk.Button(ctrl_frame, text="Stop", command=self._on_stop, state=tk.DISABLED)
+        self.stop_btn = ttk.Button(ctrl_frame, text="Stop", command=self._on_stop, state=tk.DISABLED,
+                                   style="Danger.TButton")
         self.stop_btn.pack(side=tk.LEFT)
 
         self.status_var = tk.StringVar(value="Idle")
-        ttk.Label(ctrl_frame, textvariable=self.status_var, foreground="gray").pack(side=tk.LEFT, padx=20)
+        ttk.Label(ctrl_frame, textvariable=self.status_var, foreground="#5b7a68").pack(side=tk.LEFT, padx=20)
 
+        # --- Stats Display ---
         stats_frame = ttk.LabelFrame(main_frame, text="Real-time Statistics", padding=10)
         stats_frame.pack(fill=tk.X, pady=(0, 10))
 
@@ -564,14 +642,14 @@ class TrafficGUI:
         ttk.Label(row0, text="PPS (packets/sec):", font=("Consolas", 11, "bold")).pack(side=tk.LEFT)
         self.pps_var = tk.StringVar(value="0")
         ttk.Label(row0, textvariable=self.pps_var, font=("Consolas", 14, "bold"),
-                  foreground="blue", width=20, anchor=tk.E).pack(side=tk.RIGHT)
+                  foreground="#16a34a", width=20, anchor=tk.E).pack(side=tk.RIGHT)
 
         row0b = ttk.Frame(stats_frame)
         row0b.pack(fill=tk.X, pady=(2, 5))
         ttk.Label(row0b, text="Bandwidth (Mbps):", font=("Consolas", 11, "bold")).pack(side=tk.LEFT)
         self.bps_var = tk.StringVar(value="0")
         ttk.Label(row0b, textvariable=self.bps_var, font=("Consolas", 14, "bold"),
-                  foreground="green", width=20, anchor=tk.E).pack(side=tk.RIGHT)
+                  foreground="#15803d", width=20, anchor=tk.E).pack(side=tk.RIGHT)
 
         row1 = ttk.Frame(stats_frame)
         row1.pack(fill=tk.X)
@@ -591,10 +669,13 @@ class TrafficGUI:
         self.elapsed_var = tk.StringVar(value="00:00:00")
         ttk.Label(row3, textvariable=self.elapsed_var, width=20, anchor=tk.E).pack(side=tk.RIGHT)
 
+        # --- Log ---
         log_frame = ttk.LabelFrame(main_frame, text="Log", padding=5)
         log_frame.pack(fill=tk.BOTH, expand=True)
         self.log_area = scrolledtext.ScrolledText(log_frame, height=10, width=80,
-                                                   font=("Consolas", 9), state=tk.DISABLED)
+                                                  font=("Consolas", 9), state=tk.DISABLED,
+                                                  bg="#fbfdf9", fg="#1e3a2b",
+                                                  insertbackground="#16a34a", relief="flat")
         self.log_area.pack(fill=tk.BOTH, expand=True)
 
     def _update_conc_label(self):
@@ -606,6 +687,10 @@ class TrafficGUI:
 
     def _update_rate_label(self):
         self.rate_label.config(text=str(self.rate_var.get()))
+        if self.rate_var.get() == 0:
+            self.rate_warn_var.set("⚠️ rate = 0 不限速全速发包！会占用大量 CPU，请勿用于环回/本机高并发测试")
+        else:
+            self.rate_warn_var.set("")
 
     def _on_rate_scale(self, val):
         self.rate_var.set(int(float(val)))
@@ -643,6 +728,15 @@ class TrafficGUI:
             messagebox.showerror("Error", "Target IP cannot be empty")
             return
 
+        try:
+            pkt_size = self.pkt_size_var.get()
+        except tk.TclError:
+            messagebox.showerror("Error", "Packet Size must be a number")
+            return
+        if pkt_size < 1 or pkt_size > 65535:
+            messagebox.showerror("Error", "Packet Size must be between 1 and 65535")
+            return
+
         ports, port_desc = parse_ports(port_str)
         if not ports:
             messagebox.showerror("Error", f"Invalid port spec: {port_desc}")
@@ -653,7 +747,7 @@ class TrafficGUI:
             target_port_str=port_str,
             protocol=self.protocol_var.get(),
             concurrency=self.concurrency_var.get(),
-            packet_size=self.pkt_size_var.get(),
+            packet_size=pkt_size,
             rate=self.rate_var.get(),
             log_callback=self._log
         )
@@ -693,7 +787,14 @@ class TrafficGUI:
         self.stop_btn.config(state=tk.DISABLED)
 
     def _on_start_tcp_server(self):
-        port = self.tcp_srv_port_var.get()
+        try:
+            port = self.tcp_srv_port_var.get()
+        except tk.TclError:
+            messagebox.showerror("Error", "Listen Port must be a number")
+            return
+        if port < 1 or port > 65535:
+            messagebox.showerror("Error", "Listen Port must be between 1 and 65535")
+            return
         self.tcp_server = TCPServer(port, log_callback=self._log)
         self.tcp_server.start()
         if self.tcp_server.running:
@@ -759,6 +860,10 @@ class TrafficGUI:
         self.root.mainloop()
 
 
+def main() -> None:
+    """控制台脚本入口（pyproject 的 [project.scripts] 指向这里）。"""
+    TrafficGUI().run()
+
+
 if __name__ == "__main__":
-    app = TrafficGUI()
-    app.run()
+    main()

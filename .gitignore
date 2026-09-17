@@ -1,12 +1,22 @@
+# ---- 构建产物 ----
+build/
+dist/
 *.exe
+# 打包配置要进仓库（.github/workflows/build.yml 用它），其余 .spec 忽略
+*.spec
+!TrafficTest.spec
+
+# ---- Python 缓存 ----
 __pycache__/
 *.pyc
 *.pyo
-*.spec
-build/
-dist/
+
+# ---- 编辑器 / 本地杂项 ----
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
+app_icon_preview.png
+backups/
+logs/
