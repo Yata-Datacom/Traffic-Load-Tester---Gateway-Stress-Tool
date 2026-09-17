@@ -1,5 +1,13 @@
 # Traffic Load Tester - Gateway Stress Tool / 网关超大并发流量测试工具
 
+[![CI](https://github.com/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/actions/workflows/ci.yml/badge.svg)](https://github.com/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/actions/workflows/ci.yml)
+[![Build EXE](https://github.com/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/actions/workflows/build.yml/badge.svg)](https://github.com/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](#)
+
+**v1.0.0** · [CHANGELOG](CHANGELOG.md) · [开发与测试](#开发与测试--development--tests)
+
 A Python GUI tool for high-concurrency network traffic testing against a gateway or server. Supports both TCP and UDP, with real-time PPS and bandwidth monitoring.
 
 > 基于 Python GUI 的网关大并发流量压力测试工具，支持 TCP/UDP，实时显示 PPS 和带宽。
@@ -151,3 +159,26 @@ Uses a token-bucket-like accumulator to smooth packet bursts. Each tick, the ela
 ## Note
 
 This tool sends raw payloads. Ensure the target server can handle the traffic load. Do not use against systems without authorization.
+
+---
+
+## 开发与测试 / Development & Tests
+
+```bash
+# 安装（含开发依赖）
+python -m pip install -e ".[dev]"
+
+# 跑测试
+python -m pytest -q
+
+# 静态检查
+ruff check .
+
+# 打包单文件 exe（Windows）
+python -m PyInstaller --clean --noconfirm TrafficTest.spec
+```
+
+- 装好后也可用命令入口启动：`traffic-load-tester`
+- 测试覆盖：端口表达式解析 / 统计计数与速率换算 / 负载生成 / 两个入口文件一致性 / 版本号与 `pyproject.toml` 一致
+- CI：`.github/workflows/ci.yml`（Windows 跑 pytest、Linux 跑 ruff）；`.github/workflows/build.yml`（打 tag 或手动触发 → 产出 exe artifact）
+- 版本号在 `pyproject.toml` 与 `traffic_test_gui.__version__` **两处**，必须保持一致（有测试守着）

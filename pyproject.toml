@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "traffic-load-tester"
+version = "1.0.0"
+description = "High-concurrency TCP/UDP/ICMP traffic load tester with a Tkinter GUI (gateway stress tool)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Yata-Datacom" }]
+keywords = ["network", "stress-test", "traffic-generator", "tkinter", "udp", "tcp", "icmp"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: System :: Networking :: Monitoring",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+traffic-load-tester = "traffic_test_gui:main"
+
+[tool.setuptools]
+py-modules = ["traffic_test_gui"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+# 基线门禁：只拦「真错误」（语法错 / 未定义名 / 未使用变量）——先能过，之后可按需收紧
+select = ["E9", "F"]
