@@ -8,7 +8,7 @@ import subprocess
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
 
 def setup_app_style(root: tk.Tk) -> None:
@@ -523,7 +523,7 @@ class TrafficGUI:
         target_frame.pack(fill=tk.X, pady=(0, 10))
 
         ttk.Label(target_frame, text="Target IP:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
-        self.ip_var = tk.StringVar(value="127.0.0.1")
+        self.ip_var = tk.StringVar(value="192.0.2.10")
         ttk.Entry(target_frame, textvariable=self.ip_var, width=20).grid(row=0, column=1, sticky=tk.W, padx=5)
 
         ttk.Label(target_frame, text="Port:").grid(row=0, column=2, sticky=tk.W, padx=(15, 5))

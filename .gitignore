@@ -20,3 +20,9 @@ __pycache__/
 app_icon_preview.png
 backups/
 logs/
+
+runs.json
+scenarios.json
+reports/
+!TrafficStudio.spec
+

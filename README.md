@@ -1,26 +1,28 @@
 <div align="center">
 
-<img src="app_icon.ico" width="96" alt="Traffic Load Tester" />
+<img src="app_icon.ico" width="96" alt="Traffic Studio" />
 
-# Traffic Load Tester - Gateway Stress Tool
+# Traffic Studio — Gateway Stress & Diagnostics
 
-**A Python GUI tool for high-concurrency gateway traffic stress testing — TCP / UDP, with live PPS and bandwidth display**<br/>
-<sub>**A Python GUI tool for high-concurrency network traffic testing against a gateway or server.**</sub>
+**A gateway stress-test and diagnostics studio for network engineers — load test, diagnose, and keep every run**<br/>
+<sub>TCP / UDP / TCP SYN · live PPS & Mbps · ICMP/DNS/TCP diagnostics · scenarios · run history</sub>
 
-<sub>[**English**](README.md) · [**简体中文**](README.zh-CN.md)</sub>
+<sub>[**English**](README.md) · [**简体中文**](README.zh-CN.md) · [**User guide**](docs/USER_GUIDE.md)</sub>
 
 <a href="https://github.com/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/ci.yml?branch=main&style=for-the-badge&label=CI&color=5E81AC" alt="CI" /></a>
 <a href="https://github.com/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/build.yml?branch=main&style=for-the-badge&label=Build%20EXE&color=81A1C1" alt="Build EXE" /></a>
-<a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.9%2B-8FBCBB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+" /></a>
+<a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-8FBCBB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+" /></a>
 <img src="https://img.shields.io/badge/platform-Windows-88C0D0?style=for-the-badge&logo=windows11&logoColor=white" alt="Platform: Windows" />
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-8FBCBB?style=for-the-badge" alt="License: MIT" /></a>
-<img src="https://img.shields.io/badge/version-v1.1.0-5E81AC?style=for-the-badge" alt="v1.1.0" />
+<img src="https://img.shields.io/badge/version-v2.0.0-5E81AC?style=for-the-badge" alt="v2.0.0" />
 
-**v1.1.0** · [CHANGELOG](CHANGELOG.md) · [Development & Tests](#development--tests)
+**v2.0.0** · [CHANGELOG](CHANGELOG.md) · [User guide](docs/USER_GUIDE.md)
 
 </div>
 
-> A Python GUI tool for high-concurrency network traffic testing against a gateway or server. Supports both **TCP / UDP**, with real-time **PPS** and **bandwidth** monitoring — built for network engineers who need to stress-test a gateway or server.
+> ⚠ **Authorized targets only.** Do not stress public, customer or third-party systems without explicit permission.
+
+![Traffic Studio dashboard](assets/traffic_v2_dashboard.png)
 
 ---
 
@@ -28,25 +30,38 @@
 
 | | |
 | :-- | :-- |
-| 🧩 | **No third-party dependencies** — built-in `tkinter`, `socket`, `threading` only |
-| 🖥️ | **GUI first** — double-click `traffic_test_gui.pyw` to launch, no console window |
-| 🌐 | **Three protocol modes** — UDP / TCP / TCP SYN |
-| 🚦 | **Token-bucket rate limiting** — smooth pacing, `0` means unlimited full-speed sending |
-| 📊 | **Live metrics** — PPS, bandwidth (Mbps), total packets, total bytes, elapsed time, log |
-| 🧪 | **Tested and in CI** — pytest, ruff, run automatically on GitHub Actions |
+| 🧪 | **Diagnose first** — ICMP loss/RTT/jitter, DNS, TCP ports and default gateway |
+| 🚦 | **Three load modes** — UDP / TCP / TCP SYN, live PPS and Mbps |
+| 🎬 | **Scenarios** — Web, DNS, video UDP and SYN presets; save your own |
+| ⏱️ | **Duration** — run for N seconds or stop manually |
+| 📜 | **Run history** — every completed test is recorded and exportable as CSV |
+| 🛡️ | **Safety defaults** — documentation-address target, explicit authorization gate |
+| 🧩 | **No third-party runtime dependencies** — Tkinter + sockets only |
 
 ---
 
-## 🔧 Requirements
+## 🆕 What's new in 2.0
 
-- Python 3.8+ (tested on 3.11)
-- No third-party dependencies (uses only built-in `tkinter`, `socket`, `threading`)
+- Four workspaces: **Overview / Load test / Diagnostics / History**
+- **Target diagnostics**: Ping loss + RTT + jitter, DNS resolution, TCP port probes, gateway detection
+- **Scenarios**: built-in Web / DNS / Video UDP / TCP SYN; save custom scenarios locally
+- **Duration + auto-stop**
+- **Automatic run history** with CSV export
+- **Chinese UI** while keeping technical fields in English
+- **V1 engine reused** — traffic generator, TCP receiver, port parser and gateway detector are unchanged
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick start
 
-Double-click [`traffic_test_gui.pyw`](traffic_test_gui.pyw) to launch (no console window), or run from a terminal:
+```bash
+python traffic_studio.py
+```
+
+Or double-click [`traffic_studio.pyw`](traffic_studio.pyw) for a windowless launch.
+A single-file exe is available on the [Releases](https://github.com/Yata-Datacom/Traffic-Load-Tester---Gateway-Stress-Tool/releases) page.
+
+The legacy V1 UI remains available:
 
 ```bash
 python traffic_test_gui.py
@@ -54,136 +69,99 @@ python traffic_test_gui.py
 
 ---
 
-## 🎛️ Features
+## 🎛️ Load test
 
-| Parameter | Range | Description |
+| Parameter | Range | Notes |
 | :-- | :-- | :-- |
-| Target IP | any | Destination gateway/server IP address |
-| Port | 1-65535 | Destination port (multi-port syntax supported, see below) |
-| Protocol | UDP / TCP / TCP SYN | Transport layer protocol |
-| Concurrency | 1-500 | Number of parallel sending threads |
-| Packet Size | 64-65535 bytes | Payload size per packet (presets: 64/256/512/1024/1460) |
-| Rate | 0-50000 pkt/s | Packets per second per thread (0 = unlimited full-speed sending) |
+| Target | any | Only authorized targets |
+| Ports | `8080` / `80,443` / `100-1000` / `100-1000:50` | Multi-port syntax |
+| Protocol | UDP / TCP / TCP SYN | TCP requires a listener |
+| Concurrency | 1–500 | Threads |
+| Packet size | 1–65535 B | Presets 64/256/512/1024/1460 |
+| Rate | 0–50000 pkt/s/thread | 0 = unlimited, confirmation required |
+| Duration | 0–86400 s | 0 = manual stop |
 
-### 🔌 Port Syntax
+### Protocol modes
 
-| Format | Example | Description |
+| Mode | Listener required | Description |
 | :-- | :-- | :-- |
-| Single port | `8080` | Fixed destination port |
-| Comma list | `80,443,8080` | Round-robin/random across listed ports |
-| Port range | `100-1000` | Random port from range each tick/connection |
-| Range with limit | `100-1000:50` | 50 random unique ports sampled from range |
+| UDP | No | Direct datagrams |
+| TCP | Yes | Full connection, then payload |
+| TCP SYN | No | Non-blocking half-open connects |
 
-### 🌐 Protocol Modes
+### Built-in receiver
 
-| Mode | No Server Required | Description |
-| :-- | :-- | :-- |
-| UDP | Yes | Send datagrams, no handshake needed |
-| TCP | **No** | Full TCP connection, needs server listening |
-| TCP SYN | Yes | Half-open SYN flood using non-blocking connect, tests gateway TCP stack |
+For a local TCP loopback check, start the receiver, then target `127.0.0.1` on the same port.
 
-### 📊 Real-time Display
+---
 
-| Metric | Description |
+## 🩺 Diagnostics
+
+| Check | Output |
 | :-- | :-- |
-| **PPS** | Current packets per second |
-| **Bandwidth (Mbps)** | Current throughput bandwidth |
-| **Total Packets** | Cumulative packets sent |
-| **Total Bytes** | Cumulative bytes sent |
-| **Elapsed** | Test running duration |
-| **Log** | Start/stop events with summary statistics |
+| ICMP Ping | Loss, min/avg/max RTT, jitter |
+| DNS | Resolved A/AAAA addresses |
+| TCP ports | Open/closed + connect latency (up to 50 ports) |
+| Gateway | Next hop + interface alias |
+
+![Diagnostics](assets/traffic_v2_diag.png)
+
+---
+
+## 🎬 Scenarios
+
+| Scenario | Protocol | Ports | Packet | Rate | Concurrency |
+| :-- | :-- | :-- | :-- | :-- | :-- |
+| Web gateway | TCP | 80,443 | 512 | 1000 | 20 |
+| DNS 53 | UDP | 53 | 256 | 2000 | 10 |
+| Video UDP | UDP | 5000 | 1200 | 2000 | 30 |
+| TCP SYN | TCP SYN | 80,443 | 64 | 2000 | 50 |
+
+Save the current parameters as a custom scenario; it is stored in local `scenarios.json` (git-ignored).
+
+---
+
+## 📜 Run history
+
+Every completed run is appended to local `runs.json`:
+
+- Target, ports, protocol, concurrency, packet size, rate, duration
+- Total packets/bytes, average PPS/Mbps
+- History page: refresh, export CSV to `reports/`, open folder, clear
+
+![History](assets/traffic_v2_history.png)
 
 ---
 
 ## 🏗️ Architecture
 
-```
-TrafficGUI (tkinter)
-  |
-  +-- TrafficGenerator
-        |
-        +-- N x worker threads (UDP or TCP)
-        |     each thread: token-bucket rate limiter + socket send
-        |
-        +-- Stats (thread-safe counters with Lock)
-              total_packets, total_bytes, current_pps, current_bps
+```text
+TrafficStudio (Tkinter workspace shell)
+  ├── Overview / Load test / Diagnostics / History
+  ├── traffic_diag.py      ICMP / DNS / TCP / storage / CSV
+  └── traffic_test_gui.py  V1 engine: TrafficGenerator / TCPServer / Stats
 ```
 
-### 📡 UDP Mode
-
-Each thread creates a UDP socket, connects to the target (datagram mode), and fires datagrams continuously at the configured rate.
-
-### 🗄️ TCP Mode
-
-Each thread establishes a long-lived TCP connection, then sends data continuously. On disconnection, the thread automatically reconnects after a 0.5s delay. Nagle's algorithm is disabled (`TCP_NODELAY`) for lower latency.
-
-### 🚦 Rate Limiting
-
-Smooth rate limiting based on a token-bucket algorithm: each tick, the accumulated time is converted to the number of packets to send. Burst is capped at 1000 packets per tick to avoid CPU spikes.
-
 ---
 
-## ⚠️ Notes
-
-- **Make sure you use this tool only within authorized scope** — do not start tests against systems you are not authorized to test
-- Very high concurrency may hit operating system port exhaustion or firewall limits
-- The target server needs enough processing capacity, otherwise its service may become unavailable
-- This tool sends raw payloads — ensure the target server can handle the traffic load
-
----
-
-## 🗂️ Repository layout
-
-| Path | Description |
-| :-- | :-- |
-| [`traffic_test_gui.pyw`](traffic_test_gui.pyw) | GUI entry — double-click to launch, no console window |
-| [`traffic_test_gui.py`](traffic_test_gui.py) | Same GUI, launched from a terminal (`python traffic_test_gui.py`) |
-| [`TrafficTest.spec`](TrafficTest.spec) | PyInstaller single-file exe spec |
-| [`pyproject.toml`](pyproject.toml) | Project metadata, dev extras and version; command entry point `traffic-load-tester` |
-| [`CHANGELOG.md`](CHANGELOG.md) | Release notes |
-| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI: pytest on Windows, ruff on Linux |
-| [`.github/workflows/build.yml`](.github/workflows/build.yml) | Tag or manual run → exe artifact |
-| [`LICENSE`](LICENSE) | MIT license |
-
----
-
-<a name="development--tests"></a>
-
-## 🧪 Development & Tests
+## 🧪 Development & tests
 
 ```bash
-# install (with dev dependencies)
-python -m pip install -e ".[dev]"
-
-# run the tests
 python -m pytest -q
-
-# static checks
-ruff check .
-
-# build the single-file exe (Windows)
-python -m PyInstaller --clean --noconfirm TrafficTest.spec
+python -m ruff check .
 ```
 
-- Once installed, you can also start it through the command entry point: `traffic-load-tester`
-- Test coverage: port expression parsing / stats counters and rate conversion / load generation / consistency of the two entry files / version number matching `pyproject.toml`
-- CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (pytest on Windows, ruff on Linux); [`.github/workflows/build.yml`](.github/workflows/build.yml) (tag or manual run → exe artifact)
-- The version number lives in **two** places — [`pyproject.toml`](pyproject.toml) and `traffic_test_gui.__version__` — and the two must stay in sync (a test guards this)
+**55 pytest tests**: port parsing, thread-safe Stats, payload generation, ping parsing,
+record/CSV storage, legacy entry consistency and V2 workspace smoke tests.
 
 ---
 
-## 📜 License
+## 🔐 Privacy
 
-Released under the **MIT** license — see [LICENSE](LICENSE).
-
----
-
-## ⚠️ Disclaimer
-
-**Make sure you use this tool only within authorized scope** — do not start tests against systems you are not authorized to test. Very high concurrency may hit operating system port exhaustion or firewall limits, and the target server also needs enough processing capacity.
+- `runs.json`, `scenarios.json`, `reports/`, `build/`, `dist/` and `*.exe` are ignored
+- Screenshots and docs use RFC 5737 addresses (`192.0.2.0/24`, `198.51.100.0/24`) and synthetic data
+- Never commit real targets, results, captures or customer topologies
 
 ---
 
-<div align="center">
-<sub>MIT License · Traffic Load Tester - Gateway Stress Tool</sub>
-</div>
+MIT License · © 2026 Yata-Datacom · Traffic Studio
